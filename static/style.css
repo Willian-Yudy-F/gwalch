@@ -1,0 +1,464 @@
+/* ============================================================
+   Cwymp Geiriau — visual SYNTHWAVE anos 80 🕹️
+   Neon rosa/ciano, grid retrô, sol no horizonte, scanlines e glow.
+   ============================================================ */
+
+:root {
+    --rosa:    #ff2e97;
+    --ciano:   #00f0ff;
+    --roxo:    #b14aed;
+    --amarelo: #ffd319;
+    --laranja: #ff5e3a;
+    --bg1:     #2b0a4a;
+    --bg2:     #0d0221;
+    --vidro:       rgba(177, 74, 237, 0.10);
+    --vidro-borda: rgba(0, 240, 255, 0.35);
+    --raio:    16px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: "VT323", monospace;
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 24px 16px;
+    overflow-x: hidden;
+    background: linear-gradient(180deg, #1a0633 0%, var(--bg2) 55%, #1a0633 100%);
+    background-attachment: fixed;
+}
+
+/* ---------- Fundo synthwave ---------- */
+
+/* Sol retrô no topo, com gradiente rosa→amarelo */
+.retro-sol {
+    position: fixed;
+    top: 4%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 320px;
+    height: 320px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, var(--amarelo) 0%, var(--rosa) 55%, var(--roxo) 100%);
+    filter: blur(2px);
+    opacity: 0.55;
+    z-index: 0;
+    /* "fatias" horizontais clássicas do sol synthwave */
+    -webkit-mask-image: repeating-linear-gradient(180deg, #000 0 14px, transparent 14px 20px);
+    mask-image: repeating-linear-gradient(180deg, #000 0 14px, transparent 14px 20px);
+    animation: pulsar-sol 6s ease-in-out infinite;
+}
+@keyframes pulsar-sol { 0%,100%{filter:blur(2px)} 50%{filter:blur(5px)} }
+
+/* Grid de neon no chão, com perspectiva */
+.grid-chao {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%) perspective(340px) rotateX(68deg);
+    transform-origin: bottom center;
+    width: 200%;
+    height: 55vh;
+    z-index: 0;
+    background-image:
+        linear-gradient(var(--ciano) 2px, transparent 2px),
+        linear-gradient(90deg, var(--ciano) 2px, transparent 2px);
+    background-size: 56px 56px;
+    opacity: 0.30;
+    -webkit-mask-image: linear-gradient(transparent 0%, #000 70%);
+    mask-image: linear-gradient(transparent 0%, #000 70%);
+    animation: rolar-grid 1.6s linear infinite;
+}
+@keyframes rolar-grid { from{background-position-y:0} to{background-position-y:56px} }
+
+/* Linhas de varredura (efeito de TV antiga) */
+.scanlines {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        180deg, rgba(0,0,0,0) 0 2px, rgba(0,0,0,0.18) 2px 4px);
+    mix-blend-mode: multiply;
+    opacity: 0.5;
+}
+
+#jogo {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 540px;
+    text-align: center;
+}
+
+/* ---------- Cabeçalho ---------- */
+header h1 {
+    font-family: "Press Start 2P", monospace;
+    font-size: clamp(1.2rem, 4.5vw, 2rem);
+    line-height: 1.4;
+    color: #fff;
+    text-shadow:
+        0 0 6px var(--ciano),
+        3px 3px 0 var(--rosa),
+        6px 6px 0 var(--roxo);
+    letter-spacing: 1px;
+}
+.bandeira { display: inline-block; animation: tremer 5s ease-in-out infinite; }
+@keyframes tremer { 0%,92%,100%{transform:rotate(0)} 95%{transform:rotate(14deg)} 98%{transform:rotate(-10deg)} }
+
+.subtitulo {
+    margin-top: 12px;
+    margin-bottom: 18px;
+    font-size: 1.25rem;
+    color: var(--ciano);
+    text-shadow: 0 0 8px rgba(0,240,255,0.6);
+}
+.subtitulo em { color: var(--amarelo); font-style: normal; }
+
+/* ---------- HUD ---------- */
+#hud {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+.hud-item {
+    flex: 1;
+    background: rgba(13, 2, 33, 0.6);
+    border: 2px solid var(--vidro-borda);
+    border-radius: var(--raio);
+    padding: 10px 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    box-shadow: 0 0 12px rgba(0,240,255,0.25), inset 0 0 12px rgba(0,240,255,0.08);
+}
+.hud-rotulo {
+    font-family: "Press Start 2P", monospace;
+    font-size: 0.55rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--rosa);
+    text-shadow: 0 0 6px rgba(255,46,151,0.7);
+}
+.hud-item strong {
+    font-family: "Orbitron", sans-serif;
+    font-weight: 900;
+    font-size: 1.6rem;
+    color: var(--amarelo);
+    text-shadow: 0 0 10px rgba(255,211,25,0.7);
+}
+
+/* ---------- Palco + canvas ---------- */
+#palco {
+    position: relative;
+    border-radius: var(--raio);
+    overflow: hidden;
+    box-shadow: 0 0 30px rgba(177, 74, 237, 0.5);
+}
+#tela {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 500 / 520;
+    background:
+        linear-gradient(180deg, rgba(177,74,237,0.10) 0%, rgba(13,2,33,0.65) 100%),
+        repeating-linear-gradient(0deg, rgba(0,240,255,0.06) 0 1px, transparent 1px 40px),
+        repeating-linear-gradient(90deg, rgba(0,240,255,0.06) 0 1px, transparent 1px 40px);
+    border: 2px solid var(--vidro-borda);
+    border-radius: var(--raio);
+    box-shadow: inset 0 0 24px rgba(0,240,255,0.15);
+}
+
+/* ---------- Botões de tradução ---------- */
+#opcoes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 14px;
+}
+.opcao {
+    position: relative;
+    background: rgba(13, 2, 33, 0.7);
+    color: #fff;
+    border: 2px solid var(--ciano);
+    border-radius: var(--raio);
+    padding: 16px 12px;
+    font-family: "Orbitron", sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-shadow: 0 0 6px rgba(0,240,255,0.5);
+    box-shadow: 0 0 12px rgba(0,240,255,0.25), inset 0 0 10px rgba(0,240,255,0.08);
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.2s;
+}
+.opcao:hover {
+    transform: translateY(-3px);
+    background: rgba(0, 240, 255, 0.14);
+    box-shadow: 0 0 22px rgba(0,240,255,0.6);
+}
+.opcao:active { transform: translateY(0) scale(0.98); }
+.opcao.certo {
+    background: rgba(57, 255, 136, 0.18) !important;
+    border-color: #39ff88; color: #aaffcc;
+    box-shadow: 0 0 22px rgba(57,255,136,0.7) !important;
+    animation: pulso 0.4s;
+}
+.opcao.errado {
+    background: rgba(255, 46, 151, 0.2) !important;
+    border-color: var(--rosa); color: #ffb3d9;
+    box-shadow: 0 0 22px rgba(255,46,151,0.7) !important;
+    animation: chacoalhar 0.35s;
+}
+@keyframes pulso { 0%{transform:scale(1)} 50%{transform:scale(1.08)} 100%{transform:scale(1)} }
+@keyframes chacoalhar { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-7px)} 75%{transform:translateX(7px)} }
+
+/* ---------- Overlay (início / fim de jogo) ---------- */
+#overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(13, 2, 33, 0.82);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    z-index: 5;
+    transition: opacity 0.25s;
+}
+#overlay.escondido { opacity: 0; pointer-events: none; }
+
+#overlay-conteudo {
+    background: rgba(26, 6, 51, 0.96);
+    border: 2px solid var(--rosa);
+    border-radius: 18px;
+    padding: 26px 22px;
+    max-width: 380px;
+    box-shadow: 0 0 30px rgba(255,46,151,0.5), inset 0 0 20px rgba(255,46,151,0.1);
+    animation: surgir 0.35s ease;
+}
+@keyframes surgir { from{opacity:0; transform:translateY(16px) scale(0.96)} to{opacity:1; transform:none} }
+
+#overlay-conteudo h2 {
+    font-family: "Press Start 2P", monospace;
+    font-size: 1.05rem;
+    line-height: 1.5;
+    color: var(--amarelo);
+    text-shadow: 0 0 10px rgba(255,211,25,0.6);
+    margin-bottom: 16px;
+}
+#overlay-conteudo p { line-height: 1.5; margin-bottom: 18px; font-size: 1.2rem; }
+#resultado-msg { font-size: 1.25rem; color: var(--ciano); }
+
+/* Lista de instruções */
+#instrucoes {
+    list-style: none;
+    text-align: left;
+    margin-bottom: 20px;
+}
+#instrucoes.escondido { display: none; }
+#instrucoes li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 7px 0;
+    font-size: 1.15rem;
+    line-height: 1.35;
+}
+.passo-emoji { font-size: 1.3rem; line-height: 1.1; flex-shrink: 0; }
+
+/* Botão secundário ("Learn the words first") */
+.link-secundario {
+    display: block;
+    width: 100%;
+    margin-top: 12px;
+    background: none;
+    border: none;
+    color: var(--ciano);
+    font-family: "VT323", monospace;
+    font-size: 1.15rem;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-shadow: 0 0 6px rgba(0,240,255,0.5);
+}
+.link-secundario:hover { color: var(--amarelo); }
+.link-secundario.escondido { display: none; }
+
+/* Área de salvar nome */
+#salvar-area { display: flex; gap: 8px; margin-bottom: 14px; }
+#salvar-area.escondido { display: none; }
+#campo-nome {
+    flex: 1;
+    min-width: 0;
+    background: rgba(13, 2, 33, 0.8);
+    border: 2px solid var(--ciano);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-family: "Orbitron", sans-serif;
+    font-size: 1rem;
+    color: #fff;
+    outline: none;
+    box-shadow: inset 0 0 10px rgba(0,240,255,0.15);
+}
+#campo-nome:focus { border-color: var(--amarelo); box-shadow: 0 0 14px rgba(255,211,25,0.5); }
+#btn-salvar {
+    background: var(--ciano);
+    color: var(--bg2);
+    border: none;
+    border-radius: 10px;
+    padding: 0 16px;
+    font-family: "Orbitron", sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 0 14px rgba(0,240,255,0.6);
+}
+#btn-salvar:disabled { background: #39ff88; cursor: default; }
+
+/* Botão principal (começar / jogar de novo) */
+#btn-comecar {
+    width: 100%;
+    background: linear-gradient(135deg, var(--rosa) 0%, var(--roxo) 100%);
+    color: #fff;
+    border: 2px solid #fff;
+    border-radius: 12px;
+    padding: 16px 22px;
+    font-family: "Press Start 2P", monospace;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    cursor: pointer;
+    text-shadow: 0 0 6px rgba(0,0,0,0.5);
+    box-shadow: 0 0 24px rgba(255,46,151,0.7);
+    transition: transform 0.12s, box-shadow 0.12s, filter 0.2s;
+}
+#btn-comecar em { font-style: normal; color: var(--amarelo); }
+#btn-comecar:hover  { transform: translateY(-2px); filter: brightness(1.1); box-shadow: 0 0 32px rgba(255,46,151,1); }
+#btn-comecar:active { transform: translateY(0) scale(0.98); }
+
+/* ---------- Placar ---------- */
+#placar-secao {
+    margin-top: 22px;
+    background: rgba(13, 2, 33, 0.6);
+    border: 2px solid var(--vidro-borda);
+    border-radius: var(--raio);
+    padding: 18px;
+    box-shadow: 0 0 16px rgba(0,240,255,0.2);
+}
+#placar-secao h3, #galeria-secao h3 {
+    font-family: "Press Start 2P", monospace;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    margin-bottom: 14px;
+    color: var(--amarelo);
+    text-shadow: 0 0 8px rgba(255,211,25,0.5);
+    text-align: center;
+}
+#placar { list-style: none; max-width: 340px; margin: 0 auto; }
+#placar li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 9px 14px;
+    margin-bottom: 7px;
+    background: rgba(0, 240, 255, 0.06);
+    border: 1px solid rgba(0,240,255,0.2);
+    border-radius: 10px;
+    font-size: 1.2rem;
+}
+#placar li:nth-child(1) {
+    background: rgba(255, 211, 25, 0.12);
+    border-color: rgba(255,211,25,0.5);
+}
+#placar li .pts { color: var(--amarelo); font-weight: 700; font-family: "Orbitron", sans-serif; }
+#placar li .pos { color: var(--rosa); margin-right: 8px; }
+
+/* ---------- Galeria visual de palavras ---------- */
+#galeria-secao { margin-top: 22px; text-align: left; }
+.galeria-dica {
+    display: block;
+    font-family: "VT323", monospace;
+    font-size: 1rem;
+    color: var(--ciano);
+    opacity: 0.8;
+    margin-top: 4px;
+    text-shadow: none;
+}
+#galeria {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 12px;
+}
+.card-palavra {
+    background: rgba(13, 2, 33, 0.6);
+    border: 2px solid rgba(0,240,255,0.3);
+    border-radius: 14px;
+    padding: 14px 8px;
+    text-align: center;
+    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+    cursor: default;
+}
+.card-palavra:hover {
+    transform: translateY(-4px);
+    border-color: var(--ciano);
+    box-shadow: 0 0 18px rgba(0,240,255,0.5);
+}
+.card-emoji { font-size: 2.2rem; line-height: 1; margin-bottom: 8px; }
+.card-welsh {
+    font-family: "Orbitron", sans-serif;
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: #fff;
+    text-shadow: 0 0 6px rgba(0,240,255,0.5);
+}
+.card-en { font-size: 1.1rem; color: var(--ciano); margin-top: 2px; }
+
+/* Cards "tesouro" (palavras intraduzíveis) — destaque rosa/dourado */
+.card-palavra.tesouro {
+    grid-column: 1 / -1;
+    border-color: rgba(255, 211, 25, 0.55);
+    background: rgba(255, 211, 25, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    text-align: left;
+    padding: 14px 16px;
+    box-shadow: 0 0 16px rgba(255,211,25,0.25);
+}
+.card-palavra.tesouro .card-emoji { font-size: 2rem; margin: 0; }
+.card-palavra.tesouro .card-welsh { color: var(--amarelo); }
+.card-palavra.tesouro .card-welsh,
+.card-palavra.tesouro .card-en { flex-shrink: 0; }
+.card-nota {
+    font-family: "VT323", monospace;
+    font-size: 1.1rem;
+    color: #e6d6ff;
+    line-height: 1.3;
+    margin-top: 4px;
+    flex-basis: 100%;
+}
+
+footer {
+    margin-top: 22px;
+    font-size: 1.1rem;
+    color: var(--roxo);
+    text-shadow: 0 0 6px rgba(177,74,237,0.6);
+}
+footer b { color: var(--ciano); }
+
+/* ---------- Responsivo (celular) ---------- */
+@media (max-width: 420px) {
+    header h1 { font-size: 1.15rem; }
+    .opcao { padding: 14px 8px; font-size: 0.98rem; }
+    #overlay-conteudo { padding: 20px 16px; }
+    #overlay-conteudo h2 { font-size: 0.9rem; }
+    #btn-comecar { font-size: 0.72rem; }
+}

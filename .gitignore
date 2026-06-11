@@ -1,0 +1,22 @@
+# Ambiente virtual do Python
+venv/
+.venv/
+
+# Cache do Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Banco de dados gerado (recrie com: python3 database.py)
+*.db
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Editores
+.vscode/
+.idea/
+
+# Variáveis de ambiente
+.env

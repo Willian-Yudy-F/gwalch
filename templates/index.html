@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cwymp Geiriau — Welsh Falling Words 🏴</title>
+
+    <!-- Retro 80s fonts from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Orbitron:wght@500;700;900&family=VT323&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- 80s synthwave background: retro sun + grid floor + scanlines -->
+    <div class="retro-sol"></div>
+    <div class="grid-chao"></div>
+    <div class="scanlines"></div>
+
+    <main id="jogo">
+        <header>
+            <h1>Cwymp&nbsp;Geiriau <span class="bandeira">🏴</span></h1>
+            <p class="subtitulo">Welsh Falling Words — help save the <em>Cymraeg</em> language!</p>
+        </header>
+
+        <!-- HUD: score, level, lives -->
+        <div id="hud">
+            <div class="hud-item">
+                <span class="hud-rotulo">Score</span>
+                <strong id="pontos">0</strong>
+            </div>
+            <div class="hud-item">
+                <span class="hud-rotulo">Level</span>
+                <strong id="nivel">1</strong>
+            </div>
+            <div class="hud-item">
+                <span class="hud-rotulo">Lives</span>
+                <strong id="vidas">❤️❤️❤️</strong>
+            </div>
+        </div>
+
+        <!-- Game stage: the canvas where words fall -->
+        <div id="palco">
+            <canvas id="tela" width="500" height="520"></canvas>
+
+            <!-- Start / game-over screen (overlaid on the canvas) -->
+            <div id="overlay">
+                <div id="overlay-conteudo">
+                    <h2 id="overlay-titulo">How to play</h2>
+
+                    <!-- Instructions, shown at the start -->
+                    <ol id="instrucoes">
+                        <li><span class="passo-emoji">🇬🇧</span>
+                            A <b>Welsh word</b> falls with a picture of its meaning.</li>
+                        <li><span class="passo-emoji">👆</span>
+                            Tap the correct <b>English translation</b> below before it hits the floor.</li>
+                        <li><span class="passo-emoji">⭐</span>
+                            Right answer = points. Wrong answer or a word that lands = lose a life.</li>
+                        <li><span class="passo-emoji">🚀</span>
+                            Every 50 points you <b>level up</b> and the words fall faster!</li>
+                    </ol>
+
+                    <!-- Name field (shown only on game over) -->
+                    <div id="salvar-area" class="escondido">
+                        <input id="campo-nome" type="text" maxlength="20"
+                               placeholder="Your name" value="Player">
+                        <button id="btn-salvar">Save score</button>
+                    </div>
+
+                    <button id="btn-comecar">Start · <em>Dechrau!</em></button>
+                    <button id="btn-galeria" class="link-secundario">📖 Learn the words first</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Translation buttons -->
+        <div id="opcoes"></div>
+
+        <!-- Leaderboard -->
+        <section id="placar-secao">
+            <h3>🏆 Top scores</h3>
+            <ol id="placar"></ol>
+        </section>
+
+        <!-- Visual word gallery: learn what each word means -->
+        <section id="galeria-secao">
+            <h3>📖 Word gallery <span class="galeria-dica">— tap Start to play, or study here first</span></h3>
+            <div id="galeria"></div>
+        </section>
+
+        <footer>
+            <span>Built to practise <b>Python</b> + <b>SQL</b> · <em>Iechyd da!</em> 🍻</span>
+        </footer>
+    </main>
+
+    <script src="{{ url_for('static', filename='game.js') }}"></script>
+</body>
+</html>
