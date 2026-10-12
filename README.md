@@ -4,6 +4,12 @@
 > language** (*Cymraeg*) alive. Welsh words fall from the top of the screen —
 > tap the correct English translation before they hit the floor!
 
+
+## In plain English
+A small arcade game that teaches Welsh words. Words fall from the top of the screen in an 80s neon style and you tap the right English translation before they hit the floor. Scores are saved to a real **SQLite** database through a **Flask** (Python) back end, so there is a leaderboard. It started as a way to practise Python and SQL on something fun.
+
+**What I learned:** wiring a JavaScript game loop to a Python API, storing scores in a database, and designing levels that get harder as you improve.
+
 Built with **Python (Flask)** + **SQLite** + HTML/CSS/JavaScript.
 A fun little project to practise programming with something meaningful.
 
