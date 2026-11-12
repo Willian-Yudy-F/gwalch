@@ -1,106 +1,91 @@
-# Cwymp Geiriau 🏴 — Welsh Falling Words
+# Cwymp Geiriau — Welsh Falling Words
 
-> A retro **80s synthwave** arcade game to learn and help keep the **Welsh
-> language** (*Cymraeg*) alive. Welsh words fall from the top of the screen —
-> tap the correct English translation before they hit the floor!
+[![CI](https://github.com/Willian-Yudy-F/gwalch/actions/workflows/ci.yml/badge.svg)](https://github.com/Willian-Yudy-F/gwalch/actions/workflows/ci.yml)
 
+A small synthwave arcade game for practising beginner Welsh vocabulary. A Welsh word and emoji fall down the screen; the player chooses the matching English meaning before the word reaches the floor.
 
-## In plain English
-A small arcade game that teaches Welsh words. Words fall from the top of the screen in an 80s neon style and you tap the right English translation before they hit the floor. Scores are saved to a real **SQLite** database through a **Flask** (Python) back end, so there is a leaderboard. It started as a way to practise Python and SQL on something fun.
+The project combines a JavaScript game loop with a Flask JSON API and a local SQLite leaderboard.
 
-**What I learned:** wiring a JavaScript game loop to a Python API, storing scores in a database, and designing levels that get harder as you improve.
+## Scope
 
-Built with **Python (Flask)** + **SQLite** + HTML/CSS/JavaScript.
-A fun little project to practise programming with something meaningful.
+This is a programming and vocabulary-practice project, not a complete language course. The 70+ word list was assembled for the game and has not been reviewed by a Welsh teacher or native-language editor. Some Welsh words depend on context and may have more than one English meaning.
 
-> *Iechyd da!* means "Cheers / good health" in Welsh — and it's the name of
-> this project's home folder. 🍻
+Scores are stored locally by the Flask server. There are no player accounts, remote authentication or global leaderboard. The API validates the score range, but a determined user can still submit a fabricated in-range score because the game is calculated in the browser.
 
----
+## Features
 
-## ✨ Features
+- animated Canvas game with increasing speed and three lives;
+- 70+ Welsh words grouped into beginner categories;
+- word gallery with emoji-based visual cues;
+- Flask endpoints for words and the top ten scores;
+- parameterised SQLite inserts;
+- input validation and safe leaderboard rendering;
+- database path configurable for local runs and tests.
 
-- 🕹️ **80s synthwave look** — neon grid, retro sun, scanlines and glow.
-- 🖼️ **Visual learning** — every word falls with a picture (emoji) of its meaning.
-- 📖 **Word gallery** — study all 70+ words before you play.
-- 🏆 **Leaderboard** — scores saved to a real SQLite database.
-- 📈 **Levels** — the words fall faster as you score more points.
-- 💎 **"Treasure" words** — famous untranslatable Welsh words like *hiraeth*,
-  *cwtch* and *cynefin*, with a note explaining each one.
-
-## 🎮 How to play
-
-1. A Welsh word falls with a picture of its meaning.
-2. Tap the correct **English translation** before it reaches the floor.
-3. Right answer = points. Wrong answer or a missed word = lose a life.
-4. Every 60 points you **level up** and the words speed up. 3 lives total!
-
-## 🚀 Run it locally
-
-You need **Python 3** installed. Then, in this folder:
+## Run locally
 
 ```bash
-# 1. Create a virtual environment (isolates dependencies)
-python3 -m venv venv
-
-# 2. Activate it
-source venv/bin/activate        # macOS / Linux
-# venv\Scripts\activate         # Windows
-
-# 3. Install Flask
+python -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
-
-# 4. Create the database with the words
-python3 database.py
-
-# 5. Start the server
-python3 app.py
+python database.py
+python app.py
 ```
 
-Now open **http://127.0.0.1:5000** in your browser and play!
-Press `Ctrl + C` in the terminal to stop the server.
+Open `http://127.0.0.1:5000/`.
 
-## 🗂️ Project structure
+The database is created beside `database.py` by default. To keep it somewhere else:
 
-| File | What it does |
-|---|---|
-| `app.py` | Flask web server + the API that talks to the database. |
-| `database.py` | Creates the SQLite database and stores the Welsh words. |
-| `templates/index.html` | The game page. |
-| `static/style.css` | The 80s synthwave styling. |
-| `static/game.js` | Game logic: falling words, score, lives, levels. |
-| `requirements.txt` | Python dependencies. |
-| `geiriau.db` | The SQLite database (auto-generated, not committed). |
+```bash
+export GWALCH_DB_PATH=/absolute/path/geiriau.db
+python database.py
+python app.py
+```
 
-## 🧠 What you practise here
+`FLASK_DEBUG=1` enables Flask's development debugger. It is off by default and must never be used on a public server.
 
-- **Python**: a real web server with Flask.
-- **SQL**: `CREATE TABLE`, `INSERT`, `SELECT`, `ORDER BY`, `LIMIT` — see
-  `database.py` and `app.py`.
-- **Front-end**: HTML Canvas, click events and animation in `static/game.js`.
+## API
 
-## 🛣️ Roadmap / ideas to improve
+| Method | Route | Purpose |
+|---|---|---|
+| `GET` | `/api/palavras` | Return the vocabulary list |
+| `GET` | `/api/placar` | Return the ten highest scores |
+| `POST` | `/api/placar` | Save a name and integer score from 0 to 1,000,000 |
 
-This project is made to keep growing — pull requests welcome! Some ideas:
+Example request:
 
-- [ ] Sound effects (correct / wrong / level up) and retro music.
-- [ ] "Reverse" mode: English falls, you pick the Welsh word.
-- [ ] Show the word's curiosity note when you catch a "treasure".
-- [ ] Filter by category (animals, nature, colours…) or difficulty.
-- [ ] Two words falling at once on higher levels.
-- [ ] Add more Welsh words (and audio pronunciation!).
-- [ ] Player accounts and an all-time global leaderboard.
-- [ ] Deploy online (e.g. Render, Railway or Fly.io) so anyone can play.
+```json
+{
+  "nome": "Player",
+  "pontos": 120
+}
+```
 
-## 🤝 Contributing
+## Project structure
 
-Found a bug or have an idea? Open an issue or a pull request.
-Adding a word is as easy as one line in `database.py`. 🙌
+```text
+app.py               Flask page and API routes
+database.py          SQLite schema and vocabulary seed
+templates/index.html game page
+static/game.js       game, API and DOM logic
+static/style.css     synthwave presentation
+tests/               API, database and client-safety checks
+```
 
-## 📜 License
+## Checks
 
-[MIT](LICENSE) — free to use, learn from and build on.
+```bash
+python -m unittest discover -s tests -v
+node --check static/game.js
+```
 
----
+CI runs both checks on Python 3.11 and 3.13.
 
-Made to practise **Python + SQL** while celebrating the Welsh language. *Diolch!* 🏴
+## Next improvements
+
+- have the vocabulary reviewed and attach a source or editor note to every entry;
+- calculate or sign scores on the server for a trustworthy public leaderboard;
+- add keyboard controls, audio pronunciation and reduced-motion game mode;
+- add categories and reverse translation as selectable play modes.
+
+Built by Willian Yudy Futema as a Python, SQL and JavaScript learning project. Licensed under [MIT](LICENSE).
