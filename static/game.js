@@ -48,6 +48,7 @@ let pulso = 0;          // brilho pulsante do bloco que cai
 // Busca as palavras no servidor.
 async function carregarPalavras() {
     const resp = await fetch("/api/palavras");
+    if (!resp.ok) throw new Error("Could not load the word list.");
     palavras = await resp.json();
 }
 
@@ -259,11 +260,16 @@ async function salvarPontuacao() {
     const nome = (campoNome.value || "Anonymous").trim() || "Anonymous";
     btnSalvar.disabled = true;
     btnSalvar.textContent = "Saving...";
-    await fetch("/api/placar", {
+    const resp = await fetch("/api/placar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nome: nome, pontos: pontos }),
     });
+    if (!resp.ok) {
+        btnSalvar.disabled = false;
+        btnSalvar.textContent = "Try again";
+        return;
+    }
     btnSalvar.textContent = "Saved! ✅";
     await carregarPlacar();
 }
@@ -276,6 +282,7 @@ function irParaGaleria() {
 // Busca o placar e mostra na lista.
 async function carregarPlacar() {
     const resp = await fetch("/api/placar");
+    if (!resp.ok) return;
     const lista = await resp.json();
     const ol = document.getElementById("placar");
     ol.innerHTML = "";
@@ -287,9 +294,16 @@ async function carregarPlacar() {
     lista.forEach((item, i) => {
         const li = document.createElement("li");
         const marca = medalhas[i] || `${i + 1}.`;
-        li.innerHTML =
-            `<span><span class="pos">${marca}</span>${item.nome}</span>` +
-            `<span class="pts">${item.pontos}</span>`;
+        const player = document.createElement("span");
+        const position = document.createElement("span");
+        position.className = "pos";
+        position.textContent = marca;
+        player.append(position, document.createTextNode(item.nome));
+
+        const score = document.createElement("span");
+        score.className = "pts";
+        score.textContent = item.pontos;
+        li.append(player, score);
         ol.appendChild(li);
     });
 }
@@ -319,7 +333,13 @@ campoNome.addEventListener("keydown", (e) => {
 
 // Ao abrir a página: carrega palavras, placar e monta a galeria.
 (async function () {
-    await carregarPalavras();
-    await carregarPlacar();
-    montarGaleria();
+    try {
+        await carregarPalavras();
+        await carregarPlacar();
+        montarGaleria();
+    } catch (error) {
+        overlayTitulo.textContent = "The game could not load";
+        instrucoes.textContent = error.message;
+        btnComecar.disabled = true;
+    }
 })();

@@ -21,7 +21,7 @@
     <main id="jogo">
         <header>
             <h1>Cwymp&nbsp;Geiriau <span class="bandeira">🏴</span></h1>
-            <p class="subtitulo">Welsh Falling Words — help save the <em>Cymraeg</em> language!</p>
+            <p class="subtitulo">Welsh Falling Words — practise beginner <em>Cymraeg</em> vocabulary.</p>
         </header>
 
         <!-- HUD: score, level, lives -->
@@ -42,7 +42,7 @@
 
         <!-- Game stage: the canvas where words fall -->
         <div id="palco">
-            <canvas id="tela" width="500" height="520"></canvas>
+            <canvas id="tela" width="500" height="520" aria-label="Welsh word falling game area"></canvas>
 
             <!-- Start / game-over screen (overlaid on the canvas) -->
             <div id="overlay">
@@ -58,7 +58,7 @@
                         <li><span class="passo-emoji">⭐</span>
                             Right answer = points. Wrong answer or a word that lands = lose a life.</li>
                         <li><span class="passo-emoji">🚀</span>
-                            Every 50 points you <b>level up</b> and the words fall faster!</li>
+                            Every 60 points you <b>level up</b> and the words fall faster!</li>
                     </ol>
 
                     <!-- Name field (shown only on game over) -->

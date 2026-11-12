@@ -22,8 +22,18 @@ e abra http://127.0.0.1:5000 no navegador.
 from flask import Flask, jsonify, request, render_template
 from database import get_connection, init_db
 import os
+import unicodedata
 
 app = Flask(__name__)
+
+
+@app.after_request
+def add_security_headers(response):
+    """Add small, sensible defaults for this local learning app."""
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "same-origin"
+    return response
 
 
 @app.route("/")
@@ -64,8 +74,20 @@ def salvar_placar():
     Recebe um JSON do navegador: {"nome": "...", "pontos": 123}
     SQL: INSERT (gravar no banco)."""
     dados = request.get_json(silent=True) or {}
-    nome = (dados.get("nome") or "Anônimo").strip()[:20] or "Anônimo"
-    pontos = int(dados.get("pontos", 0))
+    nome_recebido = dados.get("nome", "Anonymous")
+    pontos = dados.get("pontos")
+
+    if not isinstance(nome_recebido, str):
+        return jsonify({"error": "Name must be text."}), 400
+    if not isinstance(pontos, int) or isinstance(pontos, bool):
+        return jsonify({"error": "Score must be an integer."}), 400
+    if pontos < 0 or pontos > 1_000_000:
+        return jsonify({"error": "Score is outside the accepted range."}), 400
+
+    nome = "".join(
+        char for char in nome_recebido.strip()
+        if not unicodedata.category(char).startswith("C")
+    )[:20] or "Anonymous"
 
     conn = get_connection()
     conn.execute(
@@ -78,8 +100,9 @@ def salvar_placar():
 
 
 if __name__ == "__main__":
-    # Se o banco ainda não existe, cria automaticamente na primeira vez.
-    if not os.path.exists("geiriau.db"):
-        init_db()
-    # debug=True recarrega o servidor sozinho quando você edita o código.
-    app.run(debug=True, port=5000)
+    init_db()
+    app.run(
+        debug=os.getenv("FLASK_DEBUG") == "1",
+        host=os.getenv("HOST", "127.0.0.1"),
+        port=int(os.getenv("PORT", "5000")),
+    )
